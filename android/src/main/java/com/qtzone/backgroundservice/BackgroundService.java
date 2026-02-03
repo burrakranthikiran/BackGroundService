@@ -71,7 +71,7 @@ public class BackgroundService extends Service {
             );
 
             Request request = new Request.Builder()
-                .url("https://YOUR_API/locationNotification")
+                .url("https://snatchit-api.qztbox.com/locationNotification")
                 .post(body)
                 .build();
 
