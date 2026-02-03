@@ -1,40 +1,102 @@
 package com.qtzone.backgroundservice;
 
-import android.app.Service;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.content.Intent;
-import android.os.Build;
-import android.os.IBinder;
+import android.app.*;
+import android.content.*;
+import android.os.*;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
+
+import com.google.android.gms.location.*;
+import com.squareup.okhttp.*;
+
+import org.json.JSONObject;
 
 public class BackgroundService extends Service {
 
     private static final String CHANNEL_ID = "bg_service_channel";
+    private FusedLocationProviderClient locationClient;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.i("BG_SERVICE", "Service created");
-        createNotificationChannel();
-        startForeground(1, getNotification());
+        createChannel();
+        startForeground(1, notification());
+        locationClient = LocationServices.getFusedLocationProviderClient(this);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i("BG_SERVICE", "Service running in background");
+        Log.i("BG_SERVICE", "Service started");
 
-        // 🔁 Your background logic here
-        // Example: start location, timer, API call, socket, etc.
+        fetchLocationAndHitApi(); // 🔥 THIS replaces Ionic function
 
-        return START_STICKY; // 👈 survives app kill
+        return START_STICKY;
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.i("BG_SERVICE", "Service destroyed");
+    private void fetchLocationAndHitApi() {
+        try {
+            locationClient.getLastLocation()
+                .addOnSuccessListener(location -> {
+                    if (location == null) {
+                        Log.e("BG_SERVICE", "Location null");
+                        return;
+                    }
+
+                    double lat = location.getLatitude();
+                    double lng = location.getLongitude();
+
+                    Log.i("BG_SERVICE", "Lat: " + lat + ", Lng: " + lng);
+
+                    hitLocationApi(lat, lng);
+                });
+
+        } catch (SecurityException e) {
+            Log.e("BG_SERVICE", "Location permission missing", e);
+        }
+    }
+
+    private void hitLocationApi(double lat, double lng) {
+        try {
+            String customerId = getCustomerId();
+
+            JSONObject json = new JSONObject();
+            json.put("lat", lat);
+            json.put("lng", lng);
+            json.put("customerId", customerId);
+
+            RequestBody body = RequestBody.create(
+                json.toString(),
+                MediaType.parse("application/json")
+            );
+
+            Request request = new Request.Builder()
+                .url("https://YOUR_API/locationNotification")
+                .post(body)
+                .build();
+
+            OkHttpClient client = new OkHttpClient();
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Request req, IOException e) {
+                    Log.e("BG_SERVICE", "API error", e);
+                }
+
+                @Override
+                public void onResponse(Response response) {
+                    Log.i("BG_SERVICE", "API success: " + response.code());
+                }
+            });
+
+        } catch (Exception e) {
+            Log.e("BG_SERVICE", "API exception", e);
+        }
+    }
+
+    private String getCustomerId() {
+        SharedPreferences prefs =
+            getSharedPreferences("bg_service_prefs", MODE_PRIVATE);
+        return prefs.getString("customer_id", null);
     }
 
     @Override
@@ -42,26 +104,23 @@ public class BackgroundService extends Service {
         return null;
     }
 
-    private Notification getNotification() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            return new Notification.Builder(this, CHANNEL_ID)
-                    .setContentTitle("App running")
-                    .setContentText("Background service active")
-                    .setSmallIcon(android.R.drawable.ic_menu_mylocation)
-                    .build();
-        }
-        return null;
+    private Notification notification() {
+        return new Notification.Builder(this, CHANNEL_ID)
+            .setContentTitle("Location Service")
+            .setContentText("Sending location in background")
+            .setSmallIcon(android.R.drawable.ic_menu_mylocation)
+            .build();
     }
 
-    private void createNotificationChannel() {
+    private void createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Background Service",
-                    NotificationManager.IMPORTANCE_LOW
+                CHANNEL_ID,
+                "Background Location",
+                NotificationManager.IMPORTANCE_LOW
             );
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(channel);
+            getSystemService(NotificationManager.class)
+                .createNotificationChannel(channel);
         }
     }
 }

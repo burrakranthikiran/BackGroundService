@@ -1,6 +1,8 @@
 package com.qtzone.backgroundservice;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.Log;
 import com.getcapacitor.*;
@@ -11,13 +13,28 @@ public class BackgroundServicePlugin extends Plugin {
 
     @PluginMethod
     public void echo(PluginCall call) {
-        String value = call.getString("value");
-        Log.i("BG_PLUGIN", value);
+        String customerId = call.getString("value");
+
+        if (customerId == null || customerId.isEmpty()) {
+            call.reject("customerId is required");
+            return;
+        }
+
+        // 🔐 Store permanently
+        SharedPreferences prefs = getContext()
+                .getSharedPreferences("bg_service_prefs", Context.MODE_PRIVATE);
+
+        prefs.edit()
+                .putString("customer_id", customerId)
+                .apply();
+
+        Log.i("BG_PLUGIN", "Saved customerId: " + customerId);
 
         JSObject ret = new JSObject();
-        ret.put("value", value);
+        ret.put("value", customerId);
         call.resolve(ret);
     }
+
 
     @PluginMethod
     public void start(PluginCall call) {
