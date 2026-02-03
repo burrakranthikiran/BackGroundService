@@ -7,8 +7,14 @@ var capacitorBackgroundService = (function (exports, core) {
 
     class BackgroundServiceWeb extends core.WebPlugin {
         async echo(options) {
-            console.log('ECHO', options);
-            return options;
+            console.log('[Web] echo:', options.value);
+            return { value: options.value };
+        }
+        async start() {
+            console.warn('[Web] Background services are not supported in browser');
+        }
+        async stop() {
+            console.warn('[Web] Background services are not supported in browser');
         }
     }
 

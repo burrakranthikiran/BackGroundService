@@ -1,22 +1,33 @@
 package com.qtzone.backgroundservice;
 
-import com.getcapacitor.JSObject;
-import com.getcapacitor.Plugin;
-import com.getcapacitor.PluginCall;
-import com.getcapacitor.PluginMethod;
-import com.getcapacitor.annotation.CapacitorPlugin;
+import android.content.Intent;
+import android.util.Log;
+import com.getcapacitor.*;
 
 @CapacitorPlugin(name = "BackgroundService")
 public class BackgroundServicePlugin extends Plugin {
 
-    private BackgroundService implementation = new BackgroundService();
-
     @PluginMethod
     public void echo(PluginCall call) {
         String value = call.getString("value");
+        Log.i("BG_PLUGIN", value);
 
         JSObject ret = new JSObject();
-        ret.put("value", implementation.echo(value));
+        ret.put("value", value);
         call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void start(PluginCall call) {
+        Intent intent = new Intent(getContext(), BackgroundService.class);
+        getContext().startForegroundService(intent);
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void stop(PluginCall call) {
+        Intent intent = new Intent(getContext(), BackgroundService.class);
+        getContext().stopService(intent);
+        call.resolve();
     }
 }

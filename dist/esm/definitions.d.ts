@@ -4,4 +4,6 @@ export interface BackgroundServicePlugin {
     }): Promise<{
         value: string;
     }>;
+    start(): Promise<void>;
+    stop(): Promise<void>;
 }

@@ -6,4 +6,6 @@ export declare class BackgroundServiceWeb extends WebPlugin implements Backgroun
     }): Promise<{
         value: string;
     }>;
+    start(): Promise<void>;
+    stop(): Promise<void>;
 }
