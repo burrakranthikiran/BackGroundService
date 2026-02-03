@@ -1,8 +1,10 @@
 package com.qtzone.backgroundservice;
 
 import android.content.Intent;
+import android.os.Build;
 import android.util.Log;
 import com.getcapacitor.*;
+import com.getcapacitor.annotation.CapacitorPlugin;
 
 @CapacitorPlugin(name = "BackgroundService")
 public class BackgroundServicePlugin extends Plugin {
@@ -19,8 +21,11 @@ public class BackgroundServicePlugin extends Plugin {
 
     @PluginMethod
     public void start(PluginCall call) {
+        Log.i("BG_PLUGIN", "Working");
         Intent intent = new Intent(getContext(), BackgroundService.class);
-        getContext().startForegroundService(intent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            getContext().startForegroundService(intent);
+        }
         call.resolve();
     }
 

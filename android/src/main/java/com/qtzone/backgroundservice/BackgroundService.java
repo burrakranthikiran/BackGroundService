@@ -43,11 +43,14 @@ public class BackgroundService extends Service {
     }
 
     private Notification getNotification() {
-        return new Notification.Builder(this, CHANNEL_ID)
-                .setContentTitle("App running")
-                .setContentText("Background service active")
-                .setSmallIcon(android.R.drawable.ic_menu_mylocation)
-                .build();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return new Notification.Builder(this, CHANNEL_ID)
+                    .setContentTitle("App running")
+                    .setContentText("Background service active")
+                    .setSmallIcon(android.R.drawable.ic_menu_mylocation)
+                    .build();
+        }
+        return null;
     }
 
     private void createNotificationChannel() {
