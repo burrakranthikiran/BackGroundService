@@ -1,0 +1,9 @@
+import { WebPlugin } from '@capacitor/core';
+import type { BackgroundServicePlugin } from './definitions';
+export declare class BackgroundServiceWeb extends WebPlugin implements BackgroundServicePlugin {
+    echo(options: {
+        value: string;
+    }): Promise<{
+        value: string;
+    }>;
+}
