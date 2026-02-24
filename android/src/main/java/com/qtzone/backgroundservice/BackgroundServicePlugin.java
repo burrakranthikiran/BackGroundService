@@ -25,7 +25,7 @@ import com.getcapacitor.annotation.ActivityCallback;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.location.LocationManager;
-import netscape.javascript.JSObject;
+import com.getcapacitor.JSObject;
 import android.app.Activity;
 
 @CapacitorPlugin(name = "BackgroundService", permissions = {
