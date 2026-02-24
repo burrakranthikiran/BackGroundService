@@ -35,7 +35,6 @@ public class BackgroundServicePlugin extends Plugin {
         call.resolve(ret);
     }
 
-
     @PluginMethod
     public void start(PluginCall call) {
         Log.i("BG_PLUGIN", "Working");

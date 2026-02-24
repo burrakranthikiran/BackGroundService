@@ -54,7 +54,8 @@ public class BackgroundService extends Service {
      * Start 5-minute timer
      */
     private void startTimer() {
-        if (task != null) return;
+        if (task != null)
+            return;
 
         task = new Runnable() {
             @Override
@@ -83,13 +84,13 @@ public class BackgroundService extends Service {
                         double lat = location.getLatitude();
                         double lng = location.getLongitude();
                         hitLocationApi(lat, lng);
-//                        if (shouldSendLocation(lat, lng)) {
-//                            Log.i(TAG, "Location changed → API call");
-//                            saveLastLocation(lat, lng);
-//                            hitLocationApi(lat, lng);
-//                        } else {
-//                            Log.i(TAG, "Location unchanged → skip");
-//                        }
+                        // if (shouldSendLocation(lat, lng)) {
+                        // Log.i(TAG, "Location changed → API call");
+                        // saveLastLocation(lat, lng);
+                        // hitLocationApi(lat, lng);
+                        // } else {
+                        // Log.i(TAG, "Location unchanged → skip");
+                        // }
                     });
 
         } catch (SecurityException e) {
@@ -101,10 +102,10 @@ public class BackgroundService extends Service {
      * Compare with last sent location
      */
     private boolean shouldSendLocation(double lat, double lng) {
-        SharedPreferences prefs =
-                getSharedPreferences("bg_service_prefs", MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("bg_service_prefs", MODE_PRIVATE);
 
-        if (!prefs.contains("last_lat")) return true;
+        if (!prefs.contains("last_lat"))
+            return true;
 
         float lastLat = prefs.getFloat("last_lat", 0);
         float lastLng = prefs.getFloat("last_lng", 0);
@@ -113,8 +114,7 @@ public class BackgroundService extends Service {
         Location.distanceBetween(
                 lastLat, lastLng,
                 lat, lng,
-                result
-        );
+                result);
 
         return result[0] >= MIN_DISTANCE_METERS;
     }
@@ -123,8 +123,7 @@ public class BackgroundService extends Service {
      * Save last sent location
      */
     private void saveLastLocation(double lat, double lng) {
-        SharedPreferences prefs =
-                getSharedPreferences("bg_service_prefs", MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("bg_service_prefs", MODE_PRIVATE);
 
         prefs.edit()
                 .putFloat("last_lat", (float) lat)
@@ -150,8 +149,7 @@ public class BackgroundService extends Service {
 
             RequestBody body = RequestBody.create(
                     json.toString(),
-                    MediaType.parse("application/json")
-            );
+                    MediaType.parse("application/json"));
 
             Request request = new Request.Builder()
                     .url("https://snatchit-api.qztbox.com/customer/notification/locationNotification")
@@ -176,8 +174,7 @@ public class BackgroundService extends Service {
     }
 
     private String getCustomerId() {
-        SharedPreferences prefs =
-                getSharedPreferences("bg_service_prefs", MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("bg_service_prefs", MODE_PRIVATE);
         return prefs.getString("customer_id", null);
     }
 
@@ -211,8 +208,7 @@ public class BackgroundService extends Service {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
                     "Background Location Service",
-                    NotificationManager.IMPORTANCE_LOW
-            );
+                    NotificationManager.IMPORTANCE_LOW);
             getSystemService(NotificationManager.class)
                     .createNotificationChannel(channel);
         }
