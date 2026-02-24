@@ -16,6 +16,14 @@ var capacitorBackgroundService = (function (exports, core) {
         async stop() {
             console.warn('[Web] Background services are not supported in browser');
         }
+        async checkLocationPermission() {
+            console.warn('[Web] Background services are not supported in browser');
+            return { value: 'granted' };
+        }
+        async requestLocationPermission() {
+            console.warn('[Web] Background services are not supported in browser');
+            return { value: 'granted' };
+        }
     }
 
     var web = /*#__PURE__*/Object.freeze({

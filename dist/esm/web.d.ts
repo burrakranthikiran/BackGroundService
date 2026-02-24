@@ -8,4 +8,10 @@ export declare class BackgroundServiceWeb extends WebPlugin implements Backgroun
     }>;
     start(): Promise<void>;
     stop(): Promise<void>;
+    checkLocationPermission(): Promise<{
+        value: string;
+    }>;
+    requestLocationPermission(): Promise<{
+        value: string;
+    }>;
 }

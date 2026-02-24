@@ -10,5 +10,13 @@ export class BackgroundServiceWeb extends WebPlugin {
     async stop() {
         console.warn('[Web] Background services are not supported in browser');
     }
+    async checkLocationPermission() {
+        console.warn('[Web] Background services are not supported in browser');
+        return { value: 'granted' };
+    }
+    async requestLocationPermission() {
+        console.warn('[Web] Background services are not supported in browser');
+        return { value: 'granted' };
+    }
 }
 //# sourceMappingURL=web.js.map
