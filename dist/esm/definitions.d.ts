@@ -9,7 +9,4 @@ export interface BackgroundServicePlugin {
     checkLocationPermission(): Promise<{
         value: string;
     }>;
-    requestLocationPermission(): Promise<{
-        value: string;
-    }>;
 }

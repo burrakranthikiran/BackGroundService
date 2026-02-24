@@ -21,10 +21,6 @@ class BackgroundServiceWeb extends core.WebPlugin {
         console.warn('[Web] Background services are not supported in browser');
         return { value: 'granted' };
     }
-    async requestLocationPermission() {
-        console.warn('[Web] Background services are not supported in browser');
-        return { value: 'granted' };
-    }
 }
 
 var web = /*#__PURE__*/Object.freeze({

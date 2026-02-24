@@ -50,16 +50,6 @@
         "docs": "",
         "complexTypes": [],
         "slug": "checklocationpermission"
-      },
-      {
-        "name": "requestLocationPermission",
-        "signature": "() => Promise<{ value: string; }>",
-        "parameters": [],
-        "returns": "Promise<{ value: string; }>",
-        "tags": [],
-        "docs": "",
-        "complexTypes": [],
-        "slug": "requestlocationpermission"
       }
     ],
     "properties": []

@@ -3,5 +3,4 @@ export interface BackgroundServicePlugin {
   start(): Promise<void>;
   stop(): Promise<void>;
   checkLocationPermission(): Promise<{ value: string }>;
-  requestLocationPermission(): Promise<{ value: string }>;
 }

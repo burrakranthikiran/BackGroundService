@@ -17,7 +17,6 @@ npx cap sync
 * [`start()`](#start)
 * [`stop()`](#stop)
 * [`checkLocationPermission()`](#checklocationpermission)
-* [`requestLocationPermission()`](#requestlocationpermission)
 
 </docgen-index>
 
@@ -61,17 +60,6 @@ stop() => Promise<void>
 
 ```typescript
 checkLocationPermission() => Promise<{ value: string; }>
-```
-
-**Returns:** <code>Promise&lt;{ value: string; }&gt;</code>
-
---------------------
-
-
-### requestLocationPermission()
-
-```typescript
-requestLocationPermission() => Promise<{ value: string; }>
 ```
 
 **Returns:** <code>Promise&lt;{ value: string; }&gt;</code>

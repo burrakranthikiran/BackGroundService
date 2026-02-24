@@ -1,14 +1,34 @@
 package com.qtzone.backgroundservice;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
 import com.getcapacitor.*;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.getcapacitor.annotation.Permission;
+import com.getcapacitor.annotation.PermissionCallback;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.location.Priority;
+import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.location.LocationServices;
+import androidx.activity.result.ActivityResult;
+import com.getcapacitor.annotation.ActivityCallback;
+import android.app.Activity;
 
-@CapacitorPlugin(name = "BackgroundService")
+@CapacitorPlugin(name = "BackgroundService", permissions = {
+        @Permission(alias = "location", strings = { Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION }),
+        @Permission(alias = "backgroundLocation", strings = { Manifest.permission.ACCESS_BACKGROUND_LOCATION })
+})
 public class BackgroundServicePlugin extends Plugin {
 
     @PluginMethod
@@ -54,28 +74,99 @@ public class BackgroundServicePlugin extends Plugin {
 
     @PluginMethod
     public void checkLocationPermission(PluginCall call) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            if (getContext().checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                call.resolve("granted");
-            } else {    
-                call.resolve("denied");
-            }
+        if (getPermissionState("location") != PermissionState.GRANTED) {
+            requestPermissionForAlias("location", call, "internalLocationCallback");
         } else {
-            call.resolve("granted");
+            handleBackgroundAndSettings(call);
         }
     }
 
-    @PluginMethod
-    public void requestLocationPermission(PluginCall call) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            if (getContext().checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                call.resolve("granted");
-            } else {
-                getContext().requestPermissions(new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION});
-                call.resolve("pending");
-            }
+    @PermissionCallback
+    private void internalLocationCallback(PluginCall call) {
+        if (getPermissionState("location") == PermissionState.GRANTED) {
+            handleBackgroundAndSettings(call);
         } else {
-            call.resolve("granted");
+            JSObject ret = new JSObject();
+            ret.put("value", "denied");
+            call.resolve(ret);
         }
     }
+
+    private void handleBackgroundAndSettings(PluginCall call) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+                && getPermissionState("backgroundLocation") != PermissionState.GRANTED) {
+            requestPermissionForAlias("backgroundLocation", call, "internalBackgroundCallback");
+        } else {
+            checkAndEnableSettings(call);
+        }
+    }
+
+    @PermissionCallback
+    private void internalBackgroundCallback(PluginCall call) {
+        if (getPermissionState("backgroundLocation") == PermissionState.GRANTED) {
+            checkAndEnableSettings(call);
+        } else {
+            JSObject ret = new JSObject();
+            ret.put("value", "denied");
+            call.resolve(ret);
+        }
+    }
+
+    private void checkAndEnableSettings(PluginCall call) {
+        LocationRequest locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)
+                .setMinUpdateIntervalMillis(5000)
+                .build();
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(locationRequest);
+
+        SettingsClient client = LocationServices.getSettingsClient(getContext());
+        client.checkLocationSettings(builder.build())
+                .addOnSuccessListener(getActivity(), locationSettingsResponse -> {
+                    JSObject ret = new JSObject();
+                    ret.put("value", "granted");
+                    call.resolve(ret);
+                })
+                .addOnFailureListener(getActivity(), e -> {
+                    if (e instanceof ApiException) {
+                        ApiException apiException = (ApiException) e;
+                        int statusCode = apiException.getStatusCode();
+                        if (statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
+                            try {
+                                ResolvableApiException resolvable = (ResolvableApiException) apiException;
+                                resolvable.startResolutionForResult(getActivity(), 12345);
+                                saveCall(call);
+                            } catch (Exception sendEx) {
+                                call.reject("Error showing settings dialog");
+                            }
+                        } else {
+                            JSObject ret = new JSObject();
+                            ret.put("value", "denied");
+                            call.resolve(ret);
+                        }
+                    } else {
+                        call.reject("Unknown error checking settings");
+                    }
+                });
+    }
+
+    @Override
+    protected void handleOnActivityResult(int requestCode, int resultCode, Intent data) {
+        super.handleOnActivityResult(requestCode, resultCode, data);
+        PluginCall savedCall = getSavedCall();
+        if (savedCall == null)
+            return;
+
+        if (requestCode == 12345) {
+            JSObject ret = new JSObject();
+            if (resultCode == Activity.RESULT_OK) {
+                ret.put("value", "granted");
+            } else {
+                ret.put("value", "denied");
+            }
+            savedCall.resolve(ret);
+            freeSavedCall();
+        }
+    }
+
 }

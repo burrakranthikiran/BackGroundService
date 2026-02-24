@@ -11,7 +11,4 @@ export declare class BackgroundServiceWeb extends WebPlugin implements Backgroun
     checkLocationPermission(): Promise<{
         value: string;
     }>;
-    requestLocationPermission(): Promise<{
-        value: string;
-    }>;
 }
