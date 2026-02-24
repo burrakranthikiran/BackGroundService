@@ -22,6 +22,10 @@ import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.location.LocationServices;
 import androidx.activity.result.ActivityResult;
 import com.getcapacitor.annotation.ActivityCallback;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
+import android.location.LocationManager;
+import netscape.javascript.JSObject;
 import android.app.Activity;
 
 @CapacitorPlugin(name = "BackgroundService", permissions = {
@@ -30,6 +34,7 @@ import android.app.Activity;
         @Permission(alias = "backgroundLocation", strings = { Manifest.permission.ACCESS_BACKGROUND_LOCATION })
 })
 public class BackgroundServicePlugin extends Plugin {
+    private BroadcastReceiver gpsReceiver;
 
     @PluginMethod
     public void echo(PluginCall call) {
@@ -166,6 +171,40 @@ public class BackgroundServicePlugin extends Plugin {
             }
             savedCall.resolve(ret);
             freeSavedCall();
+        }
+    }
+
+    @Override
+    public void load() {
+        super.load();
+
+        gpsReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (LocationManager.PROVIDERS_CHANGED_ACTION.equals(intent.getAction())) {
+
+                    LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+
+                    boolean gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+                    JSObject data = new JSObject();
+                    data.put("gpsEnabled", gpsEnabled);
+
+                    notifyListeners("gpsStatusChange", data);
+                }
+            }
+        };
+
+        IntentFilter filter = new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION);
+
+        getContext().registerReceiver(gpsReceiver, filter);
+    }
+
+    @Override
+    protected void handleOnDestroy() {
+        super.handleOnDestroy();
+        if (gpsReceiver != null) {
+            getContext().unregisterReceiver(gpsReceiver);
         }
     }
 
