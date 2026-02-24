@@ -22,7 +22,7 @@ public class BackgroundService extends Service {
     private static final String CHANNEL_ID = "bg_service_channel";
 
     // ⏱ 5 minutes
-    private static final long INTERVAL = 5 * 60 * 1000;
+    private static final long INTERVAL = 1 * 60 * 1000;
 
     // 📍 minimum movement to trigger API (meters)
     private static final float MIN_DISTANCE_METERS = 30f;
@@ -82,14 +82,14 @@ public class BackgroundService extends Service {
 
                         double lat = location.getLatitude();
                         double lng = location.getLongitude();
-
-                        if (shouldSendLocation(lat, lng)) {
-                            Log.i(TAG, "Location changed → API call");
-                            saveLastLocation(lat, lng);
-                            hitLocationApi(lat, lng);
-                        } else {
-                            Log.i(TAG, "Location unchanged → skip");
-                        }
+                        hitLocationApi(lat, lng);
+//                        if (shouldSendLocation(lat, lng)) {
+//                            Log.i(TAG, "Location changed → API call");
+//                            saveLastLocation(lat, lng);
+//                            hitLocationApi(lat, lng);
+//                        } else {
+//                            Log.i(TAG, "Location unchanged → skip");
+//                        }
                     });
 
         } catch (SecurityException e) {
