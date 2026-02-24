@@ -17,4 +17,12 @@ export class BackgroundServiceWeb
   async stop(): Promise<void> {
     console.warn('[Web] Background services are not supported in browser');
   }
+  async checkLocationPermission(): Promise<{ value: string }> {
+    console.warn('[Web] Background services are not supported in browser');
+    return { value: 'granted' };
+  }
+  async requestLocationPermission(): Promise<{ value: string }> {
+    console.warn('[Web] Background services are not supported in browser');
+    return { value: 'granted' };
+  }
 }

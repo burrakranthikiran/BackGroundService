@@ -51,4 +51,31 @@ public class BackgroundServicePlugin extends Plugin {
         getContext().stopService(intent);
         call.resolve();
     }
+
+    @PluginMethod
+    public void checkLocationPermission(PluginCall call) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (getContext().checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                call.resolve("granted");
+            } else {    
+                call.resolve("denied");
+            }
+        } else {
+            call.resolve("granted");
+        }
+    }
+
+    @PluginMethod
+    public void requestLocationPermission(PluginCall call) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (getContext().checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                call.resolve("granted");
+            } else {
+                getContext().requestPermissions(new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION});
+                call.resolve("pending");
+            }
+        } else {
+            call.resolve("granted");
+        }
+    }
 }
