@@ -2,6 +2,7 @@ package com.qtzone.backgroundservice;
 
 import android.app.*;
 import android.content.*;
+import android.content.pm.ServiceInfo;
 import android.location.Location;
 import android.os.*;
 import android.util.Log;
@@ -36,7 +37,11 @@ public class BackgroundService extends Service {
         super.onCreate();
 
         createNotificationChannel();
-        startForeground(1, buildNotification());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(1, buildNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION);
+        } else {
+            startForeground(1, buildNotification());
+        }
 
         locationClient = LocationServices.getFusedLocationProviderClient(this);
         handler = new Handler(Looper.getMainLooper());
@@ -193,14 +198,18 @@ public class BackgroundService extends Service {
     }
 
     private Notification buildNotification() {
+        Notification.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            return new Notification.Builder(this, CHANNEL_ID)
-                    .setContentTitle("Location Service")
-                    .setContentText("Checking location every 5 minutes")
-                    .setSmallIcon(android.R.drawable.ic_menu_mylocation)
-                    .build();
+            builder = new Notification.Builder(this, CHANNEL_ID);
+        } else {
+            builder = new Notification.Builder(this);
         }
-        return null;
+
+        return builder
+                .setContentTitle("Location Service")
+                .setContentText("Checking location every 5 minutes")
+                .setSmallIcon(android.R.drawable.ic_menu_mylocation)
+                .build();
     }
 
     private void createNotificationChannel() {

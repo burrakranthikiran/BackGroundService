@@ -62,10 +62,17 @@ public class BackgroundServicePlugin extends Plugin {
 
     @PluginMethod
     public void start(PluginCall call) {
-        Log.i("BG_PLUGIN", "Working");
+        if (getPermissionState("location") != PermissionState.GRANTED) {
+            call.reject("Location permission not granted. Please call checkLocationPermission first.");
+            return;
+        }
+
+        Log.i("BG_PLUGIN", "Starting Background Service");
         Intent intent = new Intent(getContext(), BackgroundService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             getContext().startForegroundService(intent);
+        } else {
+            getContext().startService(intent);
         }
         call.resolve();
     }
